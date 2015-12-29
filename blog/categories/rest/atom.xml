@@ -1,0 +1,986 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Rest | Tug's Blog]]></title>
+  <link href="http://tgrall.github.io/blog/categories/rest/atom.xml" rel="self"/>
+  <link href="http://tgrall.github.io/"/>
+  <updated>2015-12-10T11:44:30+01:00</updated>
+  <id>http://tgrall.github.io/</id>
+  <author>
+    <name><![CDATA[Tug Grall]]></name>
+    <email><![CDATA[tugdual@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Couchbase 101 : Install, Store and Query Data]]></title>
+    <link href="http://tgrall.github.io/blog/2012/07/06/couchbase-101-install-store-and-query-data/"/>
+    <updated>2012-07-06T09:31:00+02:00</updated>
+    <id>http://tgrall.github.io/blog/2012/07/06/couchbase-101-install-store-and-query-data</id>
+    <content type="html"><![CDATA[<h2>Introduction</h2>
+
+<p>In this post I just want to show how easily is to get
+started with Couchbase, and also explain how to “query” the data. The basic
+steps of this tutorial are:</p>
+
+<ol>
+<li>Install Couchbase</li>
+<li>Create Data</li>
+<li>Query Data</li>
+</ol>
+
+
+<p>I will try to post more articles, if I have time to show how to use Couchbase from your applications (starting with Java).</p>
+
+<p>Prerequisites :</p>
+
+<ul>
+<li>Could not be simpler : Couchbase 2.0 available <a href="http://www.couchbase.com/downloads-all">here</a>. (Currently in Developer Preview)</li>
+</ul>
+
+
+<h2>Couchbase 101 : Insert and Query data</h2>
+
+<h3>Installation</h3>
+
+<p>I am using Couchbase on Mac OS X, so let me describe the installation in this environment. If you are using other operating system just take a look to the Couchbase documentation.</p>
+
+<p>Couchbase installation is very (very!) fast:</p>
+
+<ol>
+<li>Download the Mac OS X Zip file.</li>
+<li>Double-click the downloaded Zip installation file to extract the contents. This will create a single file, the Couchbase.app application.</li>
+<li>Drag and Drop the Couchbase.app to your chosen installation folder, such as the system Applications folder.</li>
+</ol>
+
+
+<h3>Start and Configure Couchbase Server</h3>
+
+<p>To start Couchbase Server, just double click on the Couchbase Server. Once the server is started, a new icon is added in the OS X Menu to indicate that the Server is up and running.</p>
+
+<p>You can now configure your Couchbase instance, for this you just need to access the Admin Console, available at the following location <a href="http://127.0.0.1:8091/">http://127.0.0.1:8091</a> (change the IP address if needed) or simply by going in the Couchbase menu and click on Open Admin Console entry.</p>
+
+<p>{% img <a href="http://4.bp.blogspot.com/-UokiHs1DlFw/T_VpJHmn8KI/AAAAAAAAAUo/oy7bh5w9nOw/s1600/couchbase-menu.png">http://4.bp.blogspot.com/-UokiHs1DlFw/T_VpJHmn8KI/AAAAAAAAAUo/oy7bh5w9nOw/s1600/couchbase-menu.png</a> %}</p>
+
+<ol>
+<li>Welcome Screen : Click Setup</li>
+<li>Set the disk and cluster configuration. On my instance I keep the default location for the on disk storage. Just configure the size of the memory usage for your instance, for example 800Mb. So far, we have a single instance, so no need to join a cluster.</li>
+<li>Choose to generate sample data. This will be interesting to learn more about data and views.</li>
+<li>Create <code>the default</code> bucket (use for testing only). A bucket is used by Couchbase to store data. It could be compared to a “database” in RDBMS world.</li>
+<li>Configure update notifications to be alerted when new version of Couchbase is released</li>
+<li>Configure the server with a final step with the administrator username and password</li>
+<li>When this is done you are automatically redirected to the Admin Console.</li>
+</ol>
+
+
+<p>{% img <a href="http://2.bp.blogspot.com/-_a1iynqdk8w/T_VpTwa5qEI/AAAAAAAAAUw/ZGBHZsC6x_8/s320/install-step8.png">http://2.bp.blogspot.com/-_a1iynqdk8w/T_VpTwa5qEI/AAAAAAAAAUw/ZGBHZsC6x_8/s320/install-step8.png</a> %}</p>
+
+<p>This is it! You are ready to use your Couchbase server.</p>
+
+<p>Couchbase has many interesting features, especially around scalability and elasticity but for not in this article let&rsquo;s focus on the basics :</p>
+
+<ul>
+<li>Insert some data and query them</li>
+</ul>
+
+
+<h3>Insert Data</h3>
+
+<p>Couchbase has many ways to manipulate data from you favorite programming language using the different client libraries : Java, Python, PHP, Ruby, .Net, C. For now let&rsquo;s use the Admin Console to create and query data.</p>
+
+<p>Couchbase can store any type of data, but when you need to manipulate some data with a structure the best way is to use JSON Documents. So let&rsquo;s use the console and create documents.</p>
+
+<p>To create new documents in your database, click on the &ldquo;Data Buckets&rdquo; tab. If you have installed the sample you see 2 buckets: <code>default</code> and <code>gamesim-sample</code>.</p>
+
+<p>Let&rsquo;s create a new documents in the <code>default</code> bucket:</p>
+
+<ol>
+<li>Click on Documents button</li>
+<li>Click on Create Document</li>
+<li>Since each document must have an id for example 100.</li>
+<li>Couchbase save the document and add some metadata such as &#95;rev, $flags, expiration</li>
+<li>Add new attributes to the document that describe an employee : Name, Departement and Salary, then save it. You just need to update the JSON object with values</li>
+</ol>
+
+
+<pre><code class="json">{
+      "_id": "100",
+      "name": "Thomas",
+      "dept": "Sales",
+      "salary": 5000
+  }
+</code></pre>
+
+<p>Repeat the operation with some other employees :</p>
+
+<pre><code class="java">  200,Jason,Technology,5500
+  300,Mayla,Technology,7000
+  400,Nisha,Marketing,9500
+  500,Randy,Technology,6000
+  501,Ritu,Accounting,5400
+</code></pre>
+
+<p>You have now a list of employees in your database. That was easy isn&rsquo;t? Let&rsquo;s now query them.</p>
+
+<h3>Query Data</h3>
+
+<p>Access document directly from its ID</p>
+
+<p>First of all you can quickly access a document using a simple HTTP request using its id. For example to access the Mayla with the id 300 just enter the following URL:</p>
+
+<ul>
+<li><code>http://127.0.0.1:8092/default/300</code></li>
+</ul>
+
+
+<p>In this URL you have :</p>
+
+<ul>
+<li><code>8092</code> is the Couch API REST port used to access data (where 8091 is the port for the Admin console)</li>
+<li><code>default</code> is the bucket in which the document is stored</li>
+<li><code>300</code> is the id of the document</li>
+</ul>
+
+
+<h4>Search your data with queries</h4>
+
+<p>So we have seen how you can access one document. But what if my need is :</p>
+
+<ul>
+<li>&ldquo;Give me all the employee of the Technology department&rdquo;</li>
+</ul>
+
+
+<p>To achieve such query it is necessary to create views. The views are used by Couchbase server to index and search your data. A view is a Map function written in JavaScript, that will generate a key value list that is compliant with logic you put in the Map function. Note that this key,value is now indexed and sorted by key. This is important when you query your data.</p>
+
+<p>So let&rsquo;s create a new view from the Admin Console:</p>
+
+<ol>
+<li>Click on the Views tab (be sure you are on the default bucket)</li>
+<li>Click on the &ldquo;Create Development View&rdquo;</li>
+<li>Enter the Document and View name:</li>
+<li>  Document Name : _design/dev_dept</li>
+<li>  View Name : dept</li>
+<li>Cick Save</li>
+<li>Click on your View to edit it</li>
+</ol>
+
+
+<p>Since we need to provide the list of employees that are part of a the Technology department, we need to create a view that use the <u>department as key</u>, so the map function looks like :</p>
+
+<pre><code class="javascript">function (doc) {
+    emit(doc.dept, null);
+}
+</code></pre>
+
+<p>Save the view</p>
+
+<p>This function takes the document and create a list that contains the &ldquo;dept&rdquo; as key and null as value. The value itself is not that important in our case. A simple rule will be : do not put too much data in the value since at the end Couchbase server creates an index with this map. Will see that Couchbase allows developer to easily get the document information when accessing a view.</p>
+
+<p>Click on the &ldquo;Show Results&rdquo; button, the result will look like:</p>
+
+<pre><code class="json">{"total_rows":6,"rows":[
+  {"id":"501","key":"Accounting","value":null},
+  {"id":"400","key":"Marketing","value":null},
+  {"id":"100","key":"Sales","value":null},
+  {"id":"200","key":"Technology","value":null},
+  {"id":"300","key":"Technology","value":null},
+  {"id":"500","key":"Technology","value":null}
+  ]
+}
+</code></pre>
+
+<p>As we have seen in earlier it is possible to access the document using a single URL, it is the same for views. You can for example access the view we have just created using the following URL:</p>
+
+<ul>
+<li><a href="http://127.0.0.1:8092/default/_design/dev_dept/_view/dept">http://127.0.0.1:8092/default/<em>design/dev_dept/</em>view/dept
+</a></li>
+</ul>
+
+
+<p>Now it is possible to use query parameter to filter the results using the key parameter with the value entered using a JSON String :</p>
+
+<ul>
+<li><a href="http://127.0.0.1:8092/default/_design/dev_dept/_view/dept?key=%22Technology%22">http://127.0.0.1:8092/default/<em>design/dev_dept/</em>view/dept?key=&ldquo;Technology&rdquo;</a></li>
+</ul>
+
+
+<p>The result of this query is now :</p>
+
+<pre><code class="json">{"total_rows":6,"rows":[
+  {"id":"200","key":"Technology","value":null},
+  {"id":"300","key":"Technology","value":null},
+  {"id":"500","key":"Technology","value":null}
+  ]
+}
+</code></pre>
+
+<p>You have many other parameters you can use when accessing a view to control the size, the time out, &hellip;. One of them is quite interesting is include_docs that ask Couchbase to include the full content of the document in the result. So if you call :</p>
+
+<ul>
+<li><a href="http://127.0.0.1:8092/default/_design/dev_dept/_view/dept?key=%22Technology%22&amp;amp;include_docs=true">http://127.0.0.1:8092/default/<em>design/dev_dept/</em>view/dept?key=&ldquo;Technology&rdquo;&amp;include_docs=true</a></li>
+</ul>
+
+
+<p>The result is :</p>
+
+<pre><code class="json">{"total_rows":6,"rows":[
+  {"id":"200","key":"Technology","value":null,"doc":  {"_id":"200","_rev":"1-1de6e6751608eada0000003200000000","$flags":0,"$expiration":0,"name":"Jason","dept":"Technology","salary":5500}},
+  {"id":"300","key":"Technology","value":null,"doc":{"_id":"300","_rev":"1-f3e44cee742bfae10000003200000000","$flags":0,"$expiration":0,"name":"Mayla","dept":"Technology","salary":7000}},
+  {"id":"500","key":"Technology","value":null,"doc":  {"_id":"500","_rev":"1-05780359aac8f3790000003200000000","$flags":0,"$expiration":0,"name":"Randy","dept":"Technology","salary":6000}}
+]
+}
+</code></pre>
+
+<p>Let&rsquo;s now create a little more complicated view to answer the following business requirement:</p>
+
+<ul>
+<li>&ldquo;Give me all the employee with a salary between 5000 and 6000&rdquo;</li>
+</ul>
+
+
+<p>So now you know that you need to create a new view with the salary as key let&rsquo;s with the following Map function:</p>
+
+<pre><code class="javascript">function (doc) {
+  emit(doc.salary, null);
+}
+</code></pre>
+
+<p>Couchbase is automatically sorting the key when creating/updating the index so, let&rsquo;s use the <code>startkey</code>  and  <code>endkey</code> parameter when calling the view. So let&rsquo;s call the view with from the following URL:</p>
+
+<ul>
+<li><a href="http://127.0.0.1:8092/default/_design/dev_salary/_view/salary?startkey=5000&amp;amp;endkey=6000&amp;amp;include_docs=true">http://127.0.0.1:8092/default/<em>design/dev_salary/</em>view/salary?startkey=5000&amp;endkey=6000&amp;include_docs=true</a></li>
+</ul>
+
+
+<p>The result is :</p>
+
+<pre><code class="json">{"total_rows":6,"rows":[
+ {"id":"100","key":5000,"value":null,"doc":{"_id":"100","_rev":"1-0f33580d780014060000002e00000000","$flags":0,"$expiration":0,"name":"Thomas","dept":"Sales","salary":5000}},
+ {"id":"501","key":5400,"value":null,"doc":{"_id":"501","_rev":"1-b1fe5bc79637720e0000003100000000","$flags":0,"$expiration":0,"name":"Ritu","dept":"Accounting","salary":5400}},
+ {"id":"200","key":5500,"value":null,"doc":{"_id":"200","_rev":"1-1de6e6751608eada0000003200000000","$flags":0,"$expiration":0,"name":"Jason","dept":"Technology","salary":5500}},
+ {"id":"500","key":6000,"value":null,"doc":{"_id":"500","_rev":"1-05780359aac8f3790000003200000000","$flags":0,"$expiration":0,"name":"Randy","dept":"Technology","salary":6000}}
+]
+}
+</code></pre>
+
+<h3>Conclusion</h3>
+
+<p>In this short article you have learn how to:</p>
+
+<ul>
+<li>Install Couchbase*   Create data using the Admin Console</li>
+<li>Query data with views</li>
+</ul>
+
+
+<p>When I get more time I will write another article that do the same from Java, and other languages.</p>
+
+<hr />
+
+<p>Note from @ingenthr</p>
+
+<blockquote><p>Nice blog! Note that while querying the REST interface directly is okay, we&rsquo;ve really tried to make it easy by having high-level language support for queries in each of the official client libraries. They&rsquo;re all listed over at <a href="http://www.couchbase.com/develop">http://www.couchbase.com/develop</a></p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[JAX-RS: Jersey and JSON Single Element Arrays]]></title>
+    <link href="http://tgrall.github.io/blog/2011/09/02/jax-rs-jersey-and-json-single-element-arrays/"/>
+    <updated>2011-09-02T15:30:26+02:00</updated>
+    <id>http://tgrall.github.io/blog/2011/09/02/jax-rs-jersey-and-json-single-element-arrays</id>
+    <content type="html"><![CDATA[<p>Last week I have been struggling with a small issue while developing a service using Jersey.</p>
+
+<p>The goal of this service is to provide JSON object to my Web application, so called directly from the browser. This service returns in a JSON array a list of Employees, something like:</p>
+
+<pre><code class="javascript">{"employee":[
+{"email":"jdoe@example.com","firstName":"John","lastName":"Doe"},
+{"email":"mmajor@example.com","firstName":"Mary","lastName":"Major"}
+]}
+</code></pre>
+
+<p>So an &ldquo;employee&rdquo; array, this is perfect and expected, but when my service returns a single element the returned object looks like:</p>
+
+<pre><code class="javascript">{"employee":{"email":"jdoe@example.com","firstName":"John","lastName":"Doe"}}
+</code></pre>
+
+<p>As you can see brackets <strong>[&hellip;]</strong> are missing around the employee item. This is an issue since your client code is expecting an array.</p>
+
+<!-- more -->
+
+
+<h4>A solution&hellip;</h4>
+
+<p>My application is using Jersey, the JAX-RS Reference Implementation, and JAXB for the serialization of Java Objects to JSON, as I have explained in a <a href="http://tugdualgrall.blogspot.com/2010/02/create-and-deploy-jax-rs-rest-service.html">previous blog post</a>. I found a solution to this by creating a new <a href="http://jersey.java.net/nonav/documentation/latest/json.html#d4e919">JAXB Context Resolver</a>.</p>
+
+<p>In this resolver I can control how the JSON object should be generated, here is my implementation :</p>
+
+<pre><code class="java">import com.grallandco.employee.service.converter.EmployeeConverter;
+import javax.ws.rs.ext.ContextResolver;
+import javax.ws.rs.ext.Provider;
+import javax.xml.bind.JAXBContext;
+
+import com.sun.jersey.api.json.JSONConfiguration;
+import com.sun.jersey.api.json.JSONJAXBContext;
+
+@Provider
+public class JAXBContextResolver implements ContextResolver &amp;lt; JAXBContext &amp;gt; {
+
+  private JAXBContext context;
+  private Class[] types = {EmployeeConverter.class};
+
+  public JAXBContextResolver() throws Exception {
+    this.context = new JSONJAXBContext(JSONConfiguration.mapped().arrays("employee").build(),
+    types);
+
+  }
+
+  public JAXBContext getContext(Class objectType) {
+    for (Class type : types) {
+      if (type == objectType) {
+        return context;
+      }
+    }
+    return null;
+  }
+}
+</code></pre>
+
+<p>First of all I declare this new class as a <a href="http://jersey.java.net/nonav/apidocs/1.7/jersey/index.html?javax/ws/rs/ext/Provider.html"><code>@Provider</code></a> to say that it this class is of interest to the JAX-RS runtime.</p>
+
+<p>I put in the <code>types</code> array the list of the Java classes that are concerned by the serialization (line#13). Then I create the ContextResolved with the different options that fulfill my requirements. You can take a look to the <a href="http://jersey.java.net/nonav/apidocs/1.7/jersey/index.html?com/sun/jersey/api/json/JSONJAXBContext.html"><code>JAXBContextResolver</code></a> Javadoc to see all the possible options available.</p>
+
+<p>With this class, the service now returned the following JSON String:</p>
+
+<pre><code class="javascript">{"employee":[{"email":"jdoe@example.com","firstName":"John","lastName":"Doe"}]}
+</code></pre>
+
+<p>You can find a complete example (NetBeans project) <a href="https://github.com/tgrall/Sample-REST-Service-using-JSON">here</a>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[How to Protect Your REST Service and Gadget in eXo Platform]]></title>
+    <link href="http://tgrall.github.io/blog/2011/04/11/how-to-protect-your-rest-service-and-gadget-in-exo-platform/"/>
+    <updated>2011-04-11T20:22:56+02:00</updated>
+    <id>http://tgrall.github.io/blog/2011/04/11/how-to-protect-your-rest-service-and-gadget-in-exo-platform</id>
+    <content type="html"><![CDATA[<p>During a partner workshop I was showing to the developers how the eXo IDE can help them to develop new features quickly and push them to the users in few minutes. A person asked me if it is possible to put some restriction in services and gadgets based on user profile.</p>
+
+<p>As you can guess the answer is YES WE CAN!</p>
+
+<ul>
+<li>How to access the security context in a REST service</li>
+<li>How to check is a user is member of a  group and manage permission from this information</li>
+<li>How to consume this service in a gadget and leverage the security to protect resources</li>
+</ul>
+
+
+<p>{% img <a href="http://1.bp.blogspot.com/-eR15bpCaiXo/TZ8yp1kkLYI/AAAAAAAAAPM/8Az5EVfVrzU/s200/rest-no-access.png">http://1.bp.blogspot.com/-eR15bpCaiXo/TZ8yp1kkLYI/AAAAAAAAAPM/8Az5EVfVrzU/s200/rest-no-access.png</a> %}
+Not-authorized</p>
+
+<p>{% img <a href="http://2.bp.blogspot.com/-wcfWsRgV8Xc/TZ8ypzrBsLI/AAAAAAAAAPE/U9VnHpc3q9M/s200/rest-access.png">http://2.bp.blogspot.com/-wcfWsRgV8Xc/TZ8ypzrBsLI/AAAAAAAAAPE/U9VnHpc3q9M/s200/rest-access.png</a> %}
+Authorized</p>
+
+<p>If you are not interested to follow steps by step the explanations you can directly jump to the complete <a href="#completeService">REST Service code</a> or download the full eXo IDE Project from <a href="https://github.com/tgrall/sample-gadget-with-security">GitHub</a></p>
+
+<h3>Access the User Profile from your REST Service</h3>
+
+<p>As you probably know eXo Platform uses <a href="http://jcp.org/en/jsr/detail?id=311">JAX-RS</a> as API to develop and deploy REST Services. eXo developers can create REST services using their favorite Java IDE, but here I am using the eXo IDE package with <a href="http://www.exoplatform.org/company/public/website/platform">eXo Platform</a>.</p>
+
+<p>To access the security and user information in your service method it is possible to use the <a href="http://jersey.java.net/nonav/apidocs/1.5/jersey/javax/ws/rs/core/SecurityContext.html">SecurityContext</a> class of the JAX-RS API.  Your method signature will look like:</p>
+
+<pre><code class="java">import javax.ws.rs.Path
+import javax.ws.rs.GET
+import javax.ws.rs.PathParam
+import javax.ws.rs.core.Response
+import javax.ws.rs.core.MediaType
+import javax.ws.rs.Produces
+import javax.ws.rs.core.SecurityContext
+import javax.ws.rs.core.Context
+
+@Path("/system")
+@Produces("application/json")
+public class SystemInformationService {
+
+  @GET
+  @Path("information")
+  public Response getSystemInfo(@Context SecurityContext sc) {
+    sc.getUserPrincipal();
+    return Response.ok("foo", MediaType.APPLICATION_JSON).build();
+  }
+
+}
+</code></pre>
+
+<p>In lines 7 and 8, I import the classes needed to inject the security context in the method <code>getSystemInfo()</code> in line 16. For now let&rsquo;s forget about the other part of the code.</p>
+
+<p>With the Security Context object you can now access many things in your code. Two methods are quite interesting for this example: <code>getUserPrincipal()</code> and <code>isUserInRole()</code>, since our goal is to check if a user is allowed to execute or not a part of the business logic.</p>
+
+<p>It is important here to remember that we cannot directly use the <code>isUserInRole()</code> method since this method uses the logical JavaEE roles that are defined at the Java application level. In our case we are interested to know if a user is present in a &ldquo;eXo User Identity&rdquo; Group, for example member of the <code>/platform/administrators group</code>. This information is populated during the login process and comes from the user provider that could be LDAP, the eXo Database or JCR, or any other source since developers can extend this API to plug their own provider.</p>
+
+<p>Let&rsquo;s create an helper method that check, using the eXo Identity Service, if the user that executes the method is present in a group.</p>
+
+<pre><code class="java">...
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.component.ComponentPlugin;
+import org.exoplatform.services.security.Identity;
+import org.exoplatform.services.security.IdentityRegistry;
+...
+...
+
+private boolean isMemberOf(String username,String group) {
+  ExoContainer container = ExoContainerContext.getCurrentContainer();
+  IdentityRegistry identityRegistry = (IdentityRegistry) container.getComponentInstanceOfType(IdentityRegistry.class);
+  Identity identity = identityRegistry.getIdentity(username);
+  return identity.isMemberOf( group );
+}
+</code></pre>
+
+<p>So this method is quite simple, it takes as parameter:</p>
+
+<ul>
+<li>the name of the user, that you can get from the <code>UserPrincipal.getName()</code> method</li>
+<li>the eXo Group you want to check, for example <code>/platform/administrator</code></li>
+</ul>
+
+
+<p>You can now call this method from your resource to check the user, and code the &ldquo;permission business logic&rdquo;. The method could now looks like:</p>
+
+<pre><code class="java">@GET
+@Path("information")
+public Response getSystemInfo(@Context SecurityContext sc) {
+  String groupToCheck = "/platform/administrators";
+  String response = "";
+  if (sc.getUserPrincipal() == null || !this.isMemberOf(sc.getUserPrincipal().getName(), groupToCheck) ) {
+    response = "NOT-ALLOWED";
+    } else {
+      response = "ALLOWED";
+    }
+    return Response.ok(  response   , MediaType.APPLICATION_JSON).build();
+  }
+...
+</code></pre>
+
+<p>In this example for simplicity reason I have hard coded the group to check, you can obviously use smarter code to user external configuration to inject a list of group to check for example. I manage the security logic of my method using simple if statement and return a string. You can also depending of your needs, manage the status of your response and use HTTP Code for example return an <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">HTTP 403</a>. For this you just need to return a different response using following code:</p>
+
+<pre><code class="java">    return Response.status(Response.Status.FORBIDDEN).build();
+</code></pre>
+
+<p>For simplicity reason I will stay with a single Response status (OK) and manage the permission in my client code.</p>
+
+<h3>Complete REST Service</h3>
+
+<p>Let&rsquo;s take a look to the full service now, this service allows administrators to get the list of the System Properties, other users get an status string &ldquo;NOT-ALLOWED&rdquo;:</p>
+
+<pre><code class="java">import javax.ws.rs.Path
+import javax.ws.rs.GET
+import javax.ws.rs.PathParam
+import javax.ws.rs.core.Response
+import javax.ws.rs.core.MediaType
+import javax.ws.rs.core.CacheControl
+import javax.ws.rs.Produces
+import javax.ws.rs.core.SecurityContext
+import javax.ws.rs.core.Context
+
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.component.ComponentPlugin;
+import org.exoplatform.services.security.Identity;
+import org.exoplatform.services.security.IdentityRegistry;
+
+@Path("/system")
+@Produces("application/json")
+public class SystemInformationService {
+
+
+  @GET
+  @Path("information")
+  public Response getSystemInfo(@Context SecurityContext sc) {
+    String groupToCheck = "/platform/administrators";
+    SimpleResponseWrapper response = new SimpleResponseWrapper();
+    String status = "";
+    if (sc.getUserPrincipal() == null || !this.isMemberOf(sc.getUserPrincipal().getName(), groupToCheck) ) {
+      response.status = "NOT-ALLOWED";
+    } else {
+      response.status = "OK";
+      response.data = System.getProperties();
+
+    }  
+
+    CacheControl cacheControl = new CacheControl();
+    cacheControl.setNoCache(true);
+    cacheControl.setNoStore(true);
+    return Response.ok(  response   , MediaType.APPLICATION_JSON).cacheControl(cacheControl).build();
+  }
+
+  private boolean isMemberOf(String username,String role) {
+    ExoContainer container = ExoContainerContext.getCurrentContainer();
+    IdentityRegistry identityRegistry = (IdentityRegistry) container.getComponentInstanceOfType(IdentityRegistry.class);
+    Identity identity = identityRegistry.getIdentity(username);
+    return identity.isMemberOf( role );
+  }
+
+}
+
+public class SimpleResponseWrapper {
+  String status;
+  Object data;
+}
+</code></pre>
+
+<p>To summarize:</p>
+
+<ul>
+<li>Line 24 : the <span style="font-family: Courier New,Courier,mono">SecurityContext</span> is injected to the method</li>
+<li>Line 26 : Initialization of a simple <span style="font-family: Courier New,Courier,mono">ResponseWrapper</span> defined on line 51, that contains a status and data. That will be serialized in JSON by the eXo REST engine.* Line 28 : the method check if a user is connected and member of <span style="font-family: Courier New,Courier,mono">/platform/administrator</span>. If not it send response with the status NO-ALLOWED.</li>
+<li>Line 31/32 : The response object is sent. This response contains an OK status and the data (system properties list)</li>
+<li>Line 42 : Using the eXo Identity Service, the method check if the connected user is member of a specific group.</li>
+</ul>
+
+
+<h3>Consume the service into a Gadget</h3>
+
+<p>I can now take this service and consume it into an Gadget. I also develop this Gadget using the eXo IDE.</p>
+
+<p>The following code shows the Javascript part of the Gadget that calls the service, check the security and push the response content in Gadget body. For productivity I use JQuery framework.</p>
+
+<p>&#8220;` javascript</p>
+
+<script>
+function printInfo(result) {
+  var htmlResponse= [];
+  if (result.status == "OK") {
+    var data = result.data;
+    htmlResponse.push("<tr>");
+    $.each(data, function(index, value) {
+      htmlResponse.push('<tr><td>'+ index + '</td><td>' + value + '</td></tr>');
+    });
+    htmlResponse.push("</tr>");
+    $('#systemInfo').height(200);
+  }
+  else {
+    htmlResponse.push("Not permitted");
+    $('#systemInfo').height(50);
+  }
+  $('#systemInfo').html(htmlResponse.join(''));
+  gadgets.window.adjustHeight( $('#sysInfoContainer').outerHeight()  );
+
+}
+
+function loadInformationFromServer() {
+  $.getJSON('/rest/private/system/information', function(result){ printInfo(result);   } );
+}
+
+function init() {
+  loadInformationFromServer();
+}
+
+gadgets.util.registerOnLoadHandler(init);
+
+</script>
+
+
+<p>&#8220;`</p>
+
+<p>Here some quick explanation about this code:</p>
+
+<ul>
+<li>Line 23: To call the REST service, I use the <span style="font-family: Courier New,Courier,mono">$.getJSON()</span> method. This method is really easy to use when you are executing the Gadget is in the same container than the portal that consumes it. When you are using the gadget.io.MakeRequest is interesting to proxy a request and you need to re-authenticate, for example using oAuth.</li>
+<li>Line 3 : This is the call back method, as you can see in this method I use the <span style="font-family: Courier New,Courier,mono">ResponseWrapper</span> to check the code in the status attribute. Depending of the status OK or not I do print the value.</li>
+</ul>
+
+
+<h3>Conclusion</h3>
+
+<p>In this how-to you have learned how to:</p>
+
+<ul>
+<li>Get the security context in your REST Service</li>
+<li>Check the membership of a user using the eXo Identity Service</li>
+<li>Create a gadget that consume this service and expose only data to user with correct profile</li>
+<li>Download the full project from <a href="https://github.com/tgrall/sample-gadget-with-security">GitHub</a></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Create and Deploy a JAX-RS REST Service on Google App Engine]]></title>
+    <link href="http://tgrall.github.io/blog/2010/02/28/create-and-deploy-a-jax-rs-rest-service-on-google-app-engine/"/>
+    <updated>2010-02-28T05:33:10+01:00</updated>
+    <id>http://tgrall.github.io/blog/2010/02/28/create-and-deploy-a-jax-rs-rest-service-on-google-app-engine</id>
+    <content type="html"><![CDATA[<p>In this article you will learn how to create a REST service using JAX-RS reference implementation (Jersey) and deploy it on Google AppEngine.</p>
+
+<h3>Prerequisites</h3>
+
+<p>For this tutorial you will need:</p>
+
+<ul>
+<li>a Google AppEngine account : <a href="http://code.google.com/appengine/">http://code.google.com/appengine/</a></li>
+<li>Eclipse Galileo (3.5.x)</li>
+<li>Google App Engine SDK for Java</li>
+</ul>
+
+
+<!-- more -->
+
+
+<ul>
+<li>Install the Google Plugin for Eclipse as documented <a href="http://code.google.com/eclipse/docs/install-eclipse-3.5.html">here</a> (Check that you are using the release 1.3.1 of the GAE Java SDK, if not download it and configure the plugin to use it)
+
+<ul>
+<li>it is also useful to have the AppEngine documentation locally, you can download it from <a href="http://code.google.com/appengine/downloads.html#Download_the_Google_App_Engine_Documentation">here</a>.</li>
+<li>JAX-RS Reference Implementation, be sure you take the
+Jersey 1.1.5 release. You can download it from <a href="https://jersey.dev.java.net/">here</a>.</li>
+<li>Unzip the file in a directory that we will call <code>$JERSEY_HOME</code></li>
+<li>JAXB 2.2 Implementation to simplify the marshalling/unmarshalling of the XML, and also facilitate the JSON support. Download it from <a href="https://jaxb.dev.java.net/">here</a></li>
+</ul>
+</li>
+</ul>
+
+
+<h3>Creating new application</h3>
+
+<p>To create a new App Engine project in Eclipse:</p>
+
+<p>1-  Click on the &ldquo;<strong>New Web Application Project</strong>&rdquo; button <img src="http://2.bp.blogspot.com/_aoQgQ1obiyE/S4pv-VRkifI/AAAAAAAAAKc/cNoURwz9n8M/s320/new_app_button.png" alt="" /> in the toolbar . It is also possible to do it using the menu <strong>File &gt; Web Application Project</strong></p>
+
+<p>2-  The &ldquo;Create a Web Application Project&rdquo; wizard opens:</p>
+
+<ul>
+<li>Project Name: <code>EmployeeService</code></li>
+<li>Package : <code>com.grallandco.employee.service</code></li>
+<li>Uncheck &ldquo;<code>Use Google Web Toolkit</code>&rdquo;</li>
+<li>Check that the SDK version your are using is &ldquo;<code>App Engine 1.3.0</code>&rdquo;; if not configure the project to use it.</li>
+<li>The screen should look like the following screen :</li>
+</ul>
+
+
+<p>{% img <a href="http://3.bp.blogspot.com/_aoQgQ1obiyE/S4pu9erB81I/AAAAAAAAAKE/ER3aDZKd520/s320/app-engine-wizard.png">http://3.bp.blogspot.com/_aoQgQ1obiyE/S4pu9erB81I/AAAAAAAAAKE/ER3aDZKd520/s320/app-engine-wizard.png</a> %}</p>
+
+<ul>
+<li>Click Finish</li>
+<li>The project should look like the following screen :</li>
+</ul>
+
+
+<p>{%img <a href="http://4.bp.blogspot.com/_aoQgQ1obiyE/S4pvDuZVWQI/AAAAAAAAAKM/8I2aUTtx7Os/s320/project-structure.png">http://4.bp.blogspot.com/_aoQgQ1obiyE/S4pvDuZVWQI/AAAAAAAAAKM/8I2aUTtx7Os/s320/project-structure.png</a> %}</p>
+
+<h4>Running the application</h4>
+
+<p>The App Egine SDK, installed with the Eclipse plugin contains a Web server (based on Jetty), that could be used for testing and debugging. To test that your application has been created correctly select the menu <strong>Run &gt; Run As &gt; Web Application</strong>. I personally most of the time run my server using the debug command <strong>Run &gt; DebugAs &gt; Web Application</strong>. In debug mode you can change source code and test is without restarting the server.</p>
+
+<p>The web server is starting automatically, you should see the following messagein the Eclipse console</p>
+
+<p>The server is runningat <code>http://localhost:8080/</code></p>
+
+<p>You can access the application, and the sample servlet that has been created using the URL: <code>http://localhost:8080/employeeservice</code>.</p>
+
+<p>To stop the server, click on the terminate button {% img <a href="http://1.bp.blogspot.com/_aoQgQ1obiyE/S4pvYft_VPI/AAAAAAAAAKU/UCNDdfNlEnM/s320/terminate_button.png">http://1.bp.blogspot.com/_aoQgQ1obiyE/S4pvYft_VPI/AAAAAAAAAKU/UCNDdfNlEnM/s320/terminate_button.png</a> %} in the Eclipse console.</p>
+
+<h3>Configuring the REST support in the application</h3>
+
+<p>To be able to create and run REST services in your application you need to:</p>
+
+<ul>
+<li>Add the JAX-RS, JAXB Jars in your project and application</li>
+<li><p>Configure the web application (web.xml) to handle REST requests <strong>Add JAX-RS, JAXB to your project</strong></p></li>
+<li><p>Right click on the project and select menu entry <strong>Build Path &gt; Configure Build Path&hellip;</strong></p></li>
+<li>Click on the Add External JARs button</li>
+<li>Select all the JARs located in $JERSEY_HOME/lib and $JAXB_HOME/lib folders. You can for better visibility and reuse create a user library with all these JARs</li>
+<li>You also need to copy the JARs in the web-inf/lib directory of your application, this step is mandatory to be sure that the JARs are included in the application when deployed to App Engine.
+<em>Note: I do not like this step. I would prefer to do that by configuration of the build path, to automatically add the JARs to the WEB-INF/lib directory when executing/deploying the application. Unfortunately I did not find the way to do it, so if you know it, feel free to post a comment and I will
+update the article.</em></li>
+</ul>
+
+
+<p><strong>Configure the web application</strong></p>
+
+<p>In this step you will register a new URI to handle REST requests. To do that you need to register a new servlet that is using the Jersey API and configure it to a specific URI (eg: /ressources  and/or /rest) and configure what are the Java packages that contain the REST implementation classes. So you need to modify the web.xml of your application with the following entries:</p>
+
+<pre><code class="xml">&lt;servlet&gt;
+  &lt;servlet-name&gt;Jersey Web Application&lt;/servlet-name&gt;
+  &lt;servlet-class&gt;com.sun.jersey.spi.container.servlet.ServletContainer&lt;/servlet-class&gt;
+  &lt;init-param&gt;
+    &lt;param-name&gt;com.sun.jersey.config.property.packages&lt;/param-name&gt;
+    &lt;param-value&gt;com.grallandco.employee.service.rest.impl&lt;/param-value&gt;
+  &lt;/init-param&gt;
+  &lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+&lt;/servlet&gt;
+&lt;servlet-mapping&gt;
+  &lt;servlet-name&gt;Jersey Web Application&lt;/servlet-name&gt;
+  &lt;url-pattern&gt;/resources/*&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+&lt;servlet-mapping&gt;
+  &lt;servlet-name&gt;Jersey Web Application&lt;/servlet-name&gt;
+  &lt;url-pattern&gt;/rest/*&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+</code></pre>
+
+<p>This servlet that will answer to the /resources/ and /rest/ URL. The configuration parameter <code>com.sun.jersey.config.property.packages</code> is used by Jersey to list the packages where REST services implementation are located.Note that you can put as many package as you need to, you just need to separate the package names by a ; .</p>
+
+<h3>Creating a simple REST Service to test the environment</h3>
+
+<p>The project is now ready to contain REST service. It is time to create  one.Create for example the class <code>com.grallandco.employee.service.rest.impl.HelloWorldResource</code>, be sure to use the package name that you have configured in the web.xml for the Jersey servlet, based on the configuration we have made in previous step the package is <code>com.grallandco.employee.service.rest.impl</code></p>
+
+<p>Here a sample class with the JAX-RS annotations:</p>
+
+<pre><code class="java">package com.grallandco.employee.service.rest.impl;
+import javax.ws.rs.Path;
+import javax.ws.rs.GET;
+import javax.ws.rs.Produces;
+@Path("/hr/")
+public class EmployeeResource {
+
+  @GET
+  @Produces("text/plain")
+  @Path("/employee")
+  public String getEmployee() {
+    return "Hello World!";
+  }
+}
+</code></pre>
+
+<p>You should be able to test it, stop the server and run it again, enter the following URL in your browser:</p>
+
+<p><code>http://localhost:8080/resources/hr/employee</code></p>
+
+<p>or</p>
+
+<p><code>http://localhost:8080/rest/hr/employee</code></p>
+
+<h4>Deploying the application to Google App Engine</h4>
+
+<p>Before deploying the application you need to register a new application in Google App Engine using the Administartion Console, see the documentation <a href="http://code.google.com/appengine/docs/theadminconsole.html">here</a>. In my example I have used &ldquo;<code>tugdual</code>&rdquo; as Application ID.</p>
+
+<p>You can easily now deploy the application to Google App Engine by clicking on the  &ldquo;Deploy App Engine Project&rdquo; button <img src="../../google-rest-crud/img/ae_deploy_button.png" title="Deploy App Engine Project Button" alt="Deploy App Engine Project Button" /> available in the Eclipse toolbar.</p>
+
+<p>To be able to deploy your application to Google App Engine, you need to check that your application can be registered, the application ID is stored  in the <code>WEB-INF/lib/appengine-web.xml</code>.</p>
+
+<pre><code class="xml">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;appengine-web-app xmlns="http://appengine.google.com/ns/1.0"&gt;
+  &lt;application&gt;[your-application-id]&lt;/application&gt;
+  &lt;version&gt;1&lt;/version&gt;
+  &lt;!-- Configure java.util.logging --&gt;
+  &lt;system-properties&gt;
+    &lt;property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/&gt;
+  &lt;/system-properties&gt;
+&lt;/appengine-web-app&gt;
+</code></pre>
+
+<p>The App Engine deploy button prompts you for multiple informations: username (your Google account) and password.</p>
+
+<p>When the deployment is complete you can access your application using the following URL:</p>
+
+<p><code>http://[your-application-id].appspot.com/resources/hr/employee</code></p>
+
+<p>or</p>
+
+<p><code>http://[your-application-id].appspot.com/rest/hr/employee</code></p>
+
+<h3>Ading XML and JSON support to the service</h3>
+
+<p>Let&rsquo;s now add new method to manipulate an &ldquo;Employee&rdquo; object using the service, and the data format should be based on JSON and XML. This is where JAXB is useful, since it allows easily to transform marshall/unmarshall Java objects in XML -obviously- and JSON (cool isn&rsquo;t!)</p>
+
+<h4>Creating an Employee Class</h4>
+
+<p>Start with the creation of a new class to manipulate Employee data, this is a very simple Java class that could look like the following code:</p>
+
+<pre><code class="java">package com.grallandco.employee.service.model;
+import java.util.Date;
+
+public class Employee {
+  private String firstName;
+  private String lastName;
+  private Date hireDate;
+  private String email;
+  public Employee(String firstName, String lastName, Date hireDate, String email) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.hireDate = hireDate;
+    this.email = email;
+  }
+  public Employee() {}
+    public String getFirstName() {
+      return firstName;
+    }
+    public void setFirstName(String firstName) {
+      this.firstName = firstName;
+    }
+    public String getLastName() {
+      return lastName;
+    }
+    public void setLastName(String lastName) {
+      this.lastName = lastName;
+    }
+    public Date getHireDate() {
+      return hireDate;
+    }
+    public void setHireDate(Date hireDate) {
+      this.hireDate = hireDate;
+    }
+    public String getEmail() {
+      return email;
+    }
+    public void setEmail(String email) {
+      this.email = email;
+    }
+    public String toString() {
+      StringBuffer sb = new StringBuffer();
+      sb.append("First: ").append(getFirstName());
+      sb.append(" - Last: ").append(getLastName());
+      sb.append(" - Date: ").append(getHireDate());
+      sb.append(" - Email: ").append(getEmail());
+      return sb.toString();
+    }
+  }
+</code></pre>
+
+<p>When implementing your &ldquo;real&rdquo; application with some persistence layer
+this POJO is the one as JDO/JPA entity.</p>
+
+<h4>Create a Converter class for your entity</h4>
+
+<p>I usually encapsulate all the transformation in some converter class, like that I do not directly couple my business class to the serialisation mechanism. (So I do that for classes and lists of classes). So instead of adding the JAXB annotations to the Employee class itself, let&rsquo;s create an EmployeeConverter class that will be responsible of the transformation and used by your REST service.</p>
+
+<pre><code class="java">package com.grallandco.employee.service.converter;
+
+import java.util.Date;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import com.grallandco.employee.service.model.Employee;
+
+@XmlRootElement(name = "employee")
+public class EmployeeConverter {
+  private Employee entity = null;
+  public EmployeeConverter() {
+    entity = new Employee();
+  }
+
+  public EmployeeConverter(Employee entity) {
+    this.entity = entity;
+  }
+
+  @XmlElement
+  public String getFirstName() {
+    return entity.getFirstName();
+  }
+
+  @XmlElement
+  public String getLastName() {
+    return entity.getLastName();
+  }
+
+  @XmlElement
+  public Date getHireDate() {
+    return entity.getHireDate();
+  }
+
+  @XmlElement
+  public String getEmail() {
+    return entity.getEmail();
+  }
+
+  public Employee getEmployee() {
+    return entity;
+  }
+
+  public void setFirstName(String firstName) {
+    entity.setFirstName(firstName);
+  }
+
+  public void setHireDate(Date hireDate) {
+    entity.setHireDate(hireDate);
+  }
+
+  public void setLastName(String email) {
+    entity.setEmail(email);
+  }
+
+  public void setEmail(String lastName) {
+    entity.setLastName(lastName);
+  }
+}
+</code></pre>
+
+<p>You can now update your service to use this utility/converter class to return XML or JSON ojbect based on the content type of the request.</p>
+
+<h4>Add support to JSON and XML to your REST service</h4>
+
+<p>You need to change the <code>EmployeeRessource</code> class, to change the signature and add new annotations of the <code>getEmployee()</code> method.</p>
+
+<p>The annotation you are adding:</p>
+
+<ul>
+<li><code>@Produces({"application/xml", "application/json"})</code> : indicates which type of content will be produced by the service. Based on the type of the request.</li>
+<li><code>@Path("/employee/{employeeEmail}/")</code> : change the Path to indicate a Path parameter, here for example the URL can accept an email in the URI - not the best example, but you get the point&hellip;</li>
+<li><code>public EmployeeConverter getEmployee( @PathParam ("employeeEmail") String email)</code> : change the type returned by the method and take a parameter as String that match the Path param defined in the @Path annotation.</li>
+</ul>
+
+
+<p>Here the complete class code:</p>
+
+<pre><code class="java">package com.grallandco.employee.service.rest.impl;
+
+import javax.ws.rs.Path;
+import javax.ws.rs.GET;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import com.grallandco.employee.service.converter.EmployeeConverter;
+import com.grallandco.employee.service.model.Employee;
+
+@Path("/hr/")
+public class EmployeeRessource {
+
+
+  @GET
+  @Produces({"application/xml", "application/json"})
+  @Path("/employee/{employeeEmail}/")
+  public EmployeeConverter getEmployee( @PathParam ("employeeEmail") String email) {
+    //dummy code
+    Employee emp = new Employee();
+    emp.setEmail(email);
+    emp.setFirstName("John");
+    emp.setLastName("Doe");
+    EmployeeConverter converter = new EmployeeConverter(emp);
+    return converter;
+  }
+}
+</code></pre>
+
+<h3>Test the service</h3>
+
+<p>You can now run the server locally and test the service</p>
+
+<p><code>http://localhost:8080/resources/hr/employee/tug@grallandco.com</code></p>
+
+<p>This will return an XML document.</p>
+
+<p>If you want to test the JSON call you have multiple choice:</p>
+
+<ul>
+<li>Using following command</li>
+</ul>
+
+
+<pre><code class="bash">tgrall$ curl -H "Accept: application/json" http://localhost:8080/resources/hr/employee/tug@grallandco.com
+    {"email":"tug@grallandco.com","firstName":"John","lastName":"Doe"}
+</code></pre>
+
+<ul>
+<li>Using an HTTP client that allows your to configure/set the HTTP request completely, I am using the <a href="https://addons.mozilla.org/en-US/firefox/addon/2691">Poster Firefox Plugin</a></li>
+<li>Using some Javascript code in an application</li>
+</ul>
+
+
+<p>You can repeat the test on your deployed application on Google AppEngine.</p>
+
+<h3>Conclusion</h3>
+
+<p>In this article you have learned how to create and deploy a new REST Service on Google App Engine. This service has been created with the JAX-RS Reference Implementation the Jersey project. In the next article you will learn how to add persistence and create a CRUD Rest service on Google App Engine.</p>
+]]></content>
+  </entry>
+  
+</feed>
